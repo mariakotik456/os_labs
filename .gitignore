@@ -1,0 +1,8 @@
+*.exe
+parent
+child1
+child2
+*.o
+*~
+*.bak
+*.log
