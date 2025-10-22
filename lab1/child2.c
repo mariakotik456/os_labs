@@ -9,13 +9,12 @@ int main()
 {
     char buffer[BUFFER_SIZE];
 
-    // Disable buffering for immediate output
     setvbuf(stdin, NULL, _IONBF, 0);
     setvbuf(stdout, NULL, _IONBF, 0);
 
     while (fgets(buffer, BUFFER_SIZE, stdin) != NULL)
     {
-        // Replace spaces with underscores (ignoring newline)
+
         for (int i = 0; buffer[i] != '\0' && buffer[i] != '\n'; i++)
         {
             if (isspace(buffer[i]))
@@ -24,7 +23,6 @@ int main()
             }
         }
 
-        // Output result (will be redirected to Parent)
         printf("%s", buffer);
         fflush(stdout);
     }
