@@ -6,14 +6,12 @@
 #include <sys/time.h>
 #include <string.h>
 
-// Global variables
 int *array = NULL;
 int array_size = 0;
 int max_threads = 1;
 int phase = 0;
 pthread_barrier_t barrier;
 
-// Function to swap elements
 void swap(int *a, int *b)
 {
     int temp = *a;
@@ -21,7 +19,6 @@ void swap(int *a, int *b)
     *b = temp;
 }
 
-// Function to check if array is sorted
 int is_sorted(int *arr, int size)
 {
     for (int i = 0; i < size - 1; i++)
@@ -34,7 +31,6 @@ int is_sorted(int *arr, int size)
     return 1;
 }
 
-// Function to print array
 void print_array(int *arr, int size)
 {
     for (int i = 0; i < size; i++)
@@ -44,7 +40,6 @@ void print_array(int *arr, int size)
     printf("\n");
 }
 
-// Sequential odd-even sort for verification
 void sequential_odd_even_sort(int *arr, int size)
 {
     int sorted;
@@ -52,7 +47,6 @@ void sequential_odd_even_sort(int *arr, int size)
     {
         sorted = 1;
 
-        // Even phase
         for (int i = 0; i < size - 1; i += 2)
         {
             if (arr[i] > arr[i + 1])
@@ -62,7 +56,6 @@ void sequential_odd_even_sort(int *arr, int size)
             }
         }
 
-        // Odd phase
         for (int i = 1; i < size - 1; i += 2)
         {
             if (arr[i] > arr[i + 1])
@@ -74,7 +67,6 @@ void sequential_odd_even_sort(int *arr, int size)
     } while (!sorted);
 }
 
-// Thread function for parallel odd-even sort - FIXED VERSION
 void *odd_even_thread(void *arg)
 {
     int thread_id = *(int *)arg;
@@ -86,8 +78,6 @@ void *odd_even_thread(void *arg)
 
         if (p % 2 == 0)
         {
-            // Even phase: compare (0,1), (2,3), (4,5), ...
-            // Each thread handles every max_threads-th pair
             for (int i = thread_id * 2; i < n - 1; i += max_threads * 2)
             {
                 if (array[i] > array[i + 1])
@@ -98,8 +88,6 @@ void *odd_even_thread(void *arg)
         }
         else
         {
-            // Odd phase: compare (1,2), (3,4), (5,6), ...
-            // Each thread handles every max_threads-th pair
             for (int i = thread_id * 2 + 1; i < n - 1; i += max_threads * 2)
             {
                 if (array[i] > array[i + 1])
@@ -115,7 +103,6 @@ void *odd_even_thread(void *arg)
     return NULL;
 }
 
-// Alternative approach: each thread handles specific comparisons
 void *odd_even_thread_alt(void *arg)
 {
     int thread_id = *(int *)arg;
@@ -125,9 +112,6 @@ void *odd_even_thread_alt(void *arg)
     {
         pthread_barrier_wait(&barrier);
 
-        // Each thread is responsible for specific comparisons
-        // Thread 0: comparisons 0, 2, 4, 6, ...
-        // Thread 1: comparisons 1, 3, 5, 7, ...
         int start = (phase % 2) + thread_id * 2;
         for (int i = start; i < n - 1; i += max_threads * 2)
         {
@@ -143,7 +127,6 @@ void *odd_even_thread_alt(void *arg)
     return NULL;
 }
 
-// Simple but reliable parallel version
 void *simple_parallel_sort(void *arg)
 {
     int thread_id = *(int *)arg;
@@ -152,11 +135,8 @@ void *simple_parallel_sort(void *arg)
     for (int phase = 0; phase < n; phase++)
     {
         pthread_barrier_wait(&barrier);
-
-        // All threads work on the entire array but with different starting points
         if (phase % 2 == 0)
         {
-            // Even phase
             for (int i = thread_id; i < n - 1; i += max_threads)
             {
                 if (i % 2 == 0 && array[i] > array[i + 1])
@@ -167,7 +147,6 @@ void *simple_parallel_sort(void *arg)
         }
         else
         {
-            // Odd phase
             for (int i = thread_id; i < n - 1; i += max_threads)
             {
                 if (i % 2 == 1 && array[i] > array[i + 1])
@@ -183,7 +162,6 @@ void *simple_parallel_sort(void *arg)
     return NULL;
 }
 
-// Parallel odd-even sort
 void parallel_odd_even_sort(int *arr, int size, int num_threads)
 {
     if (num_threads <= 0 || num_threads > size)
@@ -191,44 +169,37 @@ void parallel_odd_even_sort(int *arr, int size, int num_threads)
         num_threads = 1;
     }
 
-    // Single thread - use sequential version
     if (num_threads == 1)
     {
         sequential_odd_even_sort(arr, size);
         return;
     }
 
-    // Initialize global variables
     array = arr;
     array_size = size;
     max_threads = num_threads;
 
-    // Initialize barrier
     pthread_barrier_init(&barrier, NULL, num_threads);
 
     pthread_t *threads = (pthread_t *)malloc(num_threads * sizeof(pthread_t));
     int *thread_ids = (int *)malloc(num_threads * sizeof(int));
 
-    // Create threads
     for (int i = 0; i < num_threads; i++)
     {
         thread_ids[i] = i;
         pthread_create(&threads[i], NULL, simple_parallel_sort, &thread_ids[i]);
     }
 
-    // Wait for all threads to complete
     for (int i = 0; i < num_threads; i++)
     {
         pthread_join(threads[i], NULL);
     }
 
-    // Cleanup
     pthread_barrier_destroy(&barrier);
     free(threads);
     free(thread_ids);
 }
 
-// Generate random array
 void generate_random_array(int *arr, int size)
 {
     for (int i = 0; i < size; i++)
@@ -237,13 +208,11 @@ void generate_random_array(int *arr, int size)
     }
 }
 
-// Copy array
 void copy_array(int *src, int *dest, int size)
 {
     memcpy(dest, src, size * sizeof(int));
 }
 
-// Function to measure time
 double get_current_time()
 {
     struct timeval tv;
@@ -251,7 +220,6 @@ double get_current_time()
     return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
-// Function to show thread information
 void show_thread_info(int pid, int max_threads)
 {
     printf("Thread Information:\n");
@@ -261,12 +229,10 @@ void show_thread_info(int pid, int max_threads)
     printf("Or: top -H -p %d\n", pid);
 }
 
-// Function for performance analysis
 void performance_analysis(int max_test_threads)
 {
     printf("\n=== Performance Analysis ===\n");
 
-    // Test different array sizes
     int test_sizes[] = {100, 500, 1000};
     int num_sizes = sizeof(test_sizes) / sizeof(test_sizes[0]);
 
@@ -275,11 +241,9 @@ void performance_analysis(int max_test_threads)
         int current_size = test_sizes[s];
         printf("\n--- Array size: %d ---\n", current_size);
 
-        // Create test array
         int *test_arr = (int *)malloc(current_size * sizeof(int));
         generate_random_array(test_arr, current_size);
 
-        // Test sequential version first
         int *arr_seq = (int *)malloc(current_size * sizeof(int));
         copy_array(test_arr, arr_seq, current_size);
 
@@ -290,7 +254,6 @@ void performance_analysis(int max_test_threads)
         printf("Sequential: %.4f sec, sorted: %s\n", seq_time,
                is_sorted(arr_seq, current_size) ? "YES" : "NO");
 
-        // Test different thread counts
         for (int threads = 1; threads <= max_test_threads; threads++)
         {
             int *arr_par = (int *)malloc(current_size * sizeof(int));
@@ -315,12 +278,10 @@ void performance_analysis(int max_test_threads)
     }
 }
 
-// Simple sorting test on small array
 void test_small_array()
 {
     printf("\n=== Odd-Even Sort Test ===\n");
 
-    // Test with a very small array first
     printf("=== Testing with array size 6 ===\n");
     int test_small[] = {5, 2, 8, 1, 9, 3};
     int size_small = 6;
@@ -328,7 +289,6 @@ void test_small_array()
     printf("Original array: ");
     print_array(test_small, size_small);
 
-    // Sequential
     int test_seq[6];
     memcpy(test_seq, test_small, sizeof(test_small));
     sequential_odd_even_sort(test_seq, size_small);
@@ -336,7 +296,6 @@ void test_small_array()
     print_array(test_seq, size_small);
     printf("Sequential sorted: %s\n", is_sorted(test_seq, size_small) ? "YES" : "NO");
 
-    // Parallel with 2 threads
     int test_par[6];
     memcpy(test_par, test_small, sizeof(test_small));
     parallel_odd_even_sort(test_par, size_small, 2);
@@ -344,7 +303,6 @@ void test_small_array()
     print_array(test_par, size_small);
     printf("Parallel sorted: %s\n", is_sorted(test_par, size_small) ? "YES" : "NO");
 
-    // Test with original array size 10
     printf("\n=== Testing with array size 10 ===\n");
     int test1[] = {5, 2, 8, 1, 9, 3, 7, 4, 6, 0};
     int size1 = 10;
@@ -389,10 +347,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Initialize random number generator
     srand(time(NULL));
 
-    // Determine operation mode
     int demo_mode = 0;
     int test_mode = 0;
     int small_test = 0;
@@ -413,7 +369,6 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // Allocate memory for array
     int *array = (int *)malloc(array_size * sizeof(int));
     if (array == NULL)
     {
@@ -421,7 +376,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Generate random array
     generate_random_array(array, array_size);
 
     printf("=== Odd-Even Sort ===\n");
@@ -432,7 +386,6 @@ int main(int argc, char *argv[])
 
     if (demo_mode)
     {
-        // Demonstration mode
         printf("\nOriginal array (first 20 elements):\n");
         print_array(array, array_size > 20 ? 20 : array_size);
 
@@ -450,12 +403,10 @@ int main(int argc, char *argv[])
     }
     else if (test_mode)
     {
-        // Performance analysis mode
         performance_analysis(max_threads);
     }
     else
     {
-        // Normal mode
         show_thread_info(pid, max_threads);
 
         double start_time = get_current_time();
