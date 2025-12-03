@@ -67,66 +67,6 @@ void sequential_odd_even_sort(int *arr, int size)
     } while (!sorted);
 }
 
-void *odd_even_thread(void *arg)
-{
-    int thread_id = *(int *)arg;
-    int n = array_size;
-
-    for (int p = 0; p < n; p++)
-    {
-        pthread_barrier_wait(&barrier);
-
-        if (p % 2 == 0)
-        {
-            for (int i = thread_id * 2; i < n - 1; i += max_threads * 2)
-            {
-                if (array[i] > array[i + 1])
-                {
-                    swap(&array[i], &array[i + 1]);
-                }
-            }
-        }
-        else
-        {
-            for (int i = thread_id * 2 + 1; i < n - 1; i += max_threads * 2)
-            {
-                if (array[i] > array[i + 1])
-                {
-                    swap(&array[i], &array[i + 1]);
-                }
-            }
-        }
-
-        pthread_barrier_wait(&barrier);
-    }
-
-    return NULL;
-}
-
-void *odd_even_thread_alt(void *arg)
-{
-    int thread_id = *(int *)arg;
-    int n = array_size;
-
-    for (int phase = 0; phase < n; phase++)
-    {
-        pthread_barrier_wait(&barrier);
-
-        int start = (phase % 2) + thread_id * 2;
-        for (int i = start; i < n - 1; i += max_threads * 2)
-        {
-            if (array[i] > array[i + 1])
-            {
-                swap(&array[i], &array[i + 1]);
-            }
-        }
-
-        pthread_barrier_wait(&barrier);
-    }
-
-    return NULL;
-}
-
 void *simple_parallel_sort(void *arg)
 {
     int thread_id = *(int *)arg;
