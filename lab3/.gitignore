@@ -1,0 +1,30 @@
+# Исполняемые файлы программ
+*.exe
+*.out
+parent
+child1
+child2
+
+# Объектные файлы
+*.o
+
+# Временные файлы
+*~
+*.bak
+*.tmp
+
+# Логи
+*.log
+
+# Служебные файлы
+.DS_Store
+Thumbs.db
+
+# Файлы IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Сборки
+build/
+dist/
